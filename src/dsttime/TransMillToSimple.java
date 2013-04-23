@@ -14,6 +14,7 @@ public class TransMillToSimple {
         Long wholeSecond=millSecond/1000;
         Long minute=wholeSecond/60;
         Long second=wholeSecond%60;
-        return minute.toString()+":"+second.toString();
+//        return minute.toString()+":"+second.toString();
+        return String.format("%02d:%02d", minute, second);
     }
 }

@@ -15,15 +15,12 @@ public class CostCounter {
     private Long currentTime;
     
     {
-        this.startTime=0L;
-        this.endTime=0L;
-        this.flag=false;
-        this.currentTime=0L;
+        this.reset();
     }
     public void Start()
     {
         this.flag=true;
-        this.startTime=System.currentTimeMillis();
+        this.startTime=System.currentTimeMillis()-1000;
     }
     
     public void Stop()
@@ -36,9 +33,9 @@ public class CostCounter {
     {
         if(this.flag==false)
         {
-            return 0L;
+            return currentTime;
         }
-        return System.currentTimeMillis()-this.startTime;
+        return currentTime=System.currentTimeMillis()-this.startTime;
     }
     
     public Long getDuration()

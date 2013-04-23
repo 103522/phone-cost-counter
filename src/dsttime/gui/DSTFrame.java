@@ -6,8 +6,12 @@ import dsttime.SimplePhoneCostStrategy;
 import dsttime.TransMillToSimple;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
+import javax.swing.JFrame;
 import javax.swing.Timer;
 
 /**
@@ -16,43 +20,41 @@ import javax.swing.Timer;
  */
 public class DSTFrame extends javax.swing.JFrame {
 
-    private Timer timer;
-    private Timer toggleTimer;
+    private Timer currentDateTimer;
     private PhoneCostStrategy phonecost;
     private CostCounter costCounter;
     private Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    
+    static {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
     
     /**
      * Creates new form DSTFrame
      */
     public DSTFrame() {
+        JFrame.setDefaultLookAndFeelDecorated(true);
         initComponents();
         this.phonecost=new SimplePhoneCostStrategy();
         this.costCounter=new CostCounter();
-        timer = new Timer(1000, new ActionListener() {
+        currentDateTimer = new Timer(1000, new ActionListener() {
+            
+            private DateFormat df = new SimpleDateFormat("y-M-d hh:mm:ss");
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 currentDate.add(Calendar.SECOND, 1);
-                currentDateBtn.setText(currentDate.getTime().toString());
-                
+                currentDateBtn.setText(df.format(currentDate.getTime()));
+                timerLabel.setText(TransMillToSimple.TransMill(DSTFrame.this.costCounter.currentTime()));
             }
             
         });
-        timer.setRepeats(true);
-        timer.start();
+        currentDateTimer.setInitialDelay(0);
+        currentDateTimer.setRepeats(true);
+        currentDateTimer.start();
         
-        toggleTimer=new Timer(1000,new ActionListener()
-        {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DSTFrame.this.jLabel4.setText(TransMillToSimple.TransMill(DSTFrame.this.costCounter.currentTime()));
-            }
-            
-        });
-        toggleTimer.setRepeats(true);
-        
+        logPanel.setVisible(false);
+        this.pack();
     }
 
     /**
@@ -66,29 +68,48 @@ public class DSTFrame extends javax.swing.JFrame {
 
         dateSetupDialog = new javax.swing. JDialog(this);
         jLabel6 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
+        currentDateSpinner = new javax.swing.JSpinner();
         jLabel7 = new javax.swing.JLabel();
-        jToggleButton2 = new javax.swing.JToggleButton();
+        jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         currentDateBtn = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        timerLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         commToggleBtn = new javax.swing.JToggleButton();
+        logPanel = new javax.swing.JPanel();
+        jComboBox1 = new javax.swing.JComboBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        logBtn = new javax.swing.JToggleButton();
 
         dateSetupDialog.setTitle("设置当前时间");
         dateSetupDialog.setModal(true);
         dateSetupDialog.setModalExclusionType(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
         dateSetupDialog.setResizable(false);
+        dateSetupDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowActivated(java.awt.event.WindowEvent evt) {
+                dateSetupDialogActivated(evt);
+            }
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                dateSetupDialogClosed(evt);
+            }
+        });
 
         jLabel6.setText("当前时间：");
 
-        jSpinner1.setModel(new javax.swing.SpinnerDateModel());
+        currentDateSpinner.setModel(new javax.swing.SpinnerDateModel());
+        currentDateSpinner.setEditor(new javax.swing.JSpinner.DateEditor(currentDateSpinner, "y-M-d hh:mm:ss"));
 
         jLabel7.setText("夏令时开始时间为3月最后一个周日。");
 
-        jToggleButton2.setText("确定");
+        jButton1.setText("确定");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeDateActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout dateSetupDialogLayout = new javax.swing.GroupLayout(dateSetupDialog.getContentPane());
         dateSetupDialog.getContentPane().setLayout(dateSetupDialogLayout);
@@ -97,12 +118,12 @@ public class DSTFrame extends javax.swing.JFrame {
             .addGroup(dateSetupDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                     .addGroup(dateSetupDialogLayout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jToggleButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(currentDateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         dateSetupDialogLayout.setVerticalGroup(
@@ -110,19 +131,20 @@ public class DSTFrame extends javax.swing.JFrame {
             .addGroup(dateSetupDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(currentDateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel7)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jToggleButton2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         dateSetupDialog.getAccessibleContext().setAccessibleParent(this);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("计时器");
+        setResizable(false);
 
         jLabel1.setText("当前时间：");
 
@@ -139,8 +161,8 @@ public class DSTFrame extends javax.swing.JFrame {
 
         jLabel3.setText("当前费用：");
 
-        jLabel4.setFont(new java.awt.Font("Segoe WP Black", 0, 36)); // NOI18N
-        jLabel4.setText("00:00");
+        timerLabel.setFont(new java.awt.Font("Segoe WP Black", 0, 36)); // NOI18N
+        timerLabel.setText("00:00");
 
         jLabel5.setText("0.00");
 
@@ -151,26 +173,59 @@ public class DSTFrame extends javax.swing.JFrame {
             }
         });
 
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(jList1);
+
+        javax.swing.GroupLayout logPanelLayout = new javax.swing.GroupLayout(logPanel);
+        logPanel.setLayout(logPanelLayout);
+        logPanelLayout.setHorizontalGroup(
+            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1)
+            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        logPanelLayout.setVerticalGroup(
+            logPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(logPanelLayout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        logBtn.setText("历史记录");
+        logBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(commToggleBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(commToggleBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(currentDateBtn))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 188, Short.MAX_VALUE)
-                        .addComponent(jLabel4))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(timerLabel))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel5)))
+                        .addComponent(jLabel5))
+                    .addComponent(logPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -183,13 +238,17 @@ public class DSTFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel4))
+                    .addComponent(timerLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(commToggleBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(logBtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(logPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -198,6 +257,7 @@ public class DSTFrame extends javax.swing.JFrame {
 
     private void currentDateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currentDateBtnActionPerformed
         dateSetupDialog.pack();
+        dateSetupDialog.setLocationRelativeTo(this);
         dateSetupDialog.setVisible(true);
     }//GEN-LAST:event_currentDateBtnActionPerformed
 
@@ -207,15 +267,13 @@ public class DSTFrame extends javax.swing.JFrame {
             this.commToggleBtn.setText("结束通话");
             this.costCounter.reset();
             this.costCounter.Start();
-            toggleTimer.restart();
-            this.jLabel4.setText("00:00");
+            this.timerLabel.setText("00:00");
             this.jLabel5.setText("0.0");
         }
         else
         {
             this.commToggleBtn.setText("开始通话");
             this.costCounter.Stop();
-            toggleTimer.stop();
             Long duration=DSTFrame.this.costCounter.getDuration();
             Long durationMinute=duration/1000/60;
             if(duration/1000%60!=0)
@@ -227,6 +285,26 @@ public class DSTFrame extends javax.swing.JFrame {
         
     }//GEN-LAST:event_commToggleBtnActionPerformed
 
+    private void changeDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeDateActionPerformed
+        Date d = (Date) currentDateSpinner.getValue();
+        currentDate.setTime(d);
+        dateSetupDialog.dispose();
+    }//GEN-LAST:event_changeDateActionPerformed
+
+    private void dateSetupDialogActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_dateSetupDialogActivated
+        currentDateSpinner.setValue(currentDate.getTime());
+        currentDateTimer.stop();
+    }//GEN-LAST:event_dateSetupDialogActivated
+
+    private void dateSetupDialogClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_dateSetupDialogClosed
+        currentDateTimer.start();
+    }//GEN-LAST:event_dateSetupDialogClosed
+
+    private void logBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logBtnActionPerformed
+        logPanel.setVisible(logBtn.isSelected());
+        this.pack();
+    }//GEN-LAST:event_logBtnActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -237,19 +315,8 @@ public class DSTFrame extends javax.swing.JFrame {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DSTFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DSTFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DSTFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(DSTFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
@@ -266,15 +333,20 @@ public class DSTFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton commToggleBtn;
     private javax.swing.JButton currentDateBtn;
+    private javax.swing.JSpinner currentDateSpinner;
     private javax.swing.JDialog dateSetupDialog;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JToggleButton jToggleButton2;
+    private javax.swing.JList jList1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JToggleButton logBtn;
+    private javax.swing.JPanel logPanel;
+    private javax.swing.JLabel timerLabel;
     // End of variables declaration//GEN-END:variables
 }
