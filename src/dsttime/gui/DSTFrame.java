@@ -315,6 +315,8 @@ public class DSTFrame extends javax.swing.JFrame
     }//GEN-LAST:event_commToggleBtnActionPerformed
 
     private void changeDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeDateActionPerformed
+        Date d=(Date)this.currentDateSpinner.getValue();
+        this.currentDate.setTime(d);
         dateSetupDialog.dispose();
     }//GEN-LAST:event_changeDateActionPerformed
 
