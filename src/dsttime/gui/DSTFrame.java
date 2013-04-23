@@ -27,6 +27,8 @@ public class DSTFrame extends javax.swing.JFrame
     private CostCounter costCounter;
     private Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("Asia/Hong_Kong"));
     private boolean DSTFlag = false;
+    
+    private DateFormat df = new SimpleDateFormat("y-M-d HH:mm:ss Z");
 
     static {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Hong_Kong"));
@@ -41,30 +43,13 @@ public class DSTFrame extends javax.swing.JFrame
         initComponents();
         this.phonecost = new SimplePhoneCostStrategy();
         this.costCounter = new CostCounter();
-        if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())) 
-        {
-            this.DSTFlag=true;
-        }
         currentDateTimer = new Timer(1000, new ActionListener()
         {
-            private DateFormat df = new SimpleDateFormat("y-M-d HH:mm:ss");
 
             @Override
             public void actionPerformed(ActionEvent e)
             {
                 currentDate.add(Calendar.SECOND, 1);
-                System.out.println(currentDate.getTimeZone().inDaylightTime(currentDate.getTime())+" "+DSTFrame.this.DSTFlag);
-                if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())&&DSTFrame.this.DSTFlag==false) {
-                    currentDate.add(Calendar.HOUR_OF_DAY, -1);
-                    DSTFrame.this.DSTFlag=true;
-                    System.out.println(1);
-                }
-                else if(currentDate.getTimeZone().inDaylightTime(currentDate.getTime())==false&&DSTFrame.this.DSTFlag)
-                {
-                    currentDate.add(Calendar.HOUR_OF_DAY, 1);
-                    DSTFrame.this.DSTFlag=false;
-                    System.out.println(2);
-                }
                 currentDateBtn.setText(df.format(currentDate.getTime()));
                 timerLabel.setText(TransMillToSimple.TransMill(DSTFrame.this.costCounter.currentTime()));
             }
@@ -330,14 +315,12 @@ public class DSTFrame extends javax.swing.JFrame
     }//GEN-LAST:event_commToggleBtnActionPerformed
 
     private void changeDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeDateActionPerformed
-        Date d = (Date) currentDateSpinner.getValue();
-        currentDate.setTime(d);
         dateSetupDialog.dispose();
     }//GEN-LAST:event_changeDateActionPerformed
 
     private void dateSetupDialogActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_dateSetupDialogActivated
-        currentDateSpinner.setValue(currentDate.getTime());
         currentDateTimer.stop();
+        currentDateSpinner.setValue(currentDate.getTime());
     }//GEN-LAST:event_dateSetupDialogActivated
 
     private void dateSetupDialogClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_dateSetupDialogClosed
@@ -351,19 +334,15 @@ public class DSTFrame extends javax.swing.JFrame
 
     private void jComboBox2ItemStateChanged(java.awt.event.ItemEvent evt)//GEN-FIRST:event_jComboBox2ItemStateChanged
     {//GEN-HEADEREND:event_jComboBox2ItemStateChanged
-        String timezone = (String) DSTFrame.this.jComboBox2.getSelectedItem();
-        TimeZone.setDefault(TimeZone.getTimeZone(timezone));
-        this.currentDate.setTimeZone(TimeZone.getTimeZone(timezone));
+        String timezone = (String) jComboBox2.getSelectedItem();
+        TimeZone tz = TimeZone.getTimeZone(timezone);
+
+        this.currentDate.setTimeZone(tz);
+        currentDateSpinner.setEditor(new javax.swing.JSpinner.DateEditor(currentDateSpinner, "y-M-d HH:mm:ss"));
+        df.setTimeZone(tz);
+        TimeZone.setDefault(tz);
+        
         this.currentDateSpinner.setValue(this.currentDate.getTime());
-        if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())) 
-        {
-            this.DSTFlag=true;
-        }
-        else
-        {
-            this.DSTFlag=false;
-        }
-        System.out.println(this.currentDate.getTimeZone());
     }//GEN-LAST:event_jComboBox2ItemStateChanged
 
     /**
