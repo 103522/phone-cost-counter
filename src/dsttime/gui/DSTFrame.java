@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
@@ -18,41 +19,60 @@ import javax.swing.Timer;
  *
  * @author robinhood, yfwz100
  */
-public class DSTFrame extends javax.swing.JFrame {
+public class DSTFrame extends javax.swing.JFrame
+{
 
     private Timer currentDateTimer;
     private PhoneCostStrategy phonecost;
     private CostCounter costCounter;
-    private Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    
+    private Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("Asia/Hong_Kong"));
+    private boolean DSTFlag = false;
+
     static {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Hong_Kong"));
     }
-    
+
     /**
      * Creates new form DSTFrame
      */
-    public DSTFrame() {
+    public DSTFrame()
+    {
         JFrame.setDefaultLookAndFeelDecorated(true);
         initComponents();
-        this.phonecost=new SimplePhoneCostStrategy();
-        this.costCounter=new CostCounter();
-        currentDateTimer = new Timer(1000, new ActionListener() {
-            
-            private DateFormat df = new SimpleDateFormat("y-M-d hh:mm:ss");
+        this.phonecost = new SimplePhoneCostStrategy();
+        this.costCounter = new CostCounter();
+        if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())) 
+        {
+            this.DSTFlag=true;
+        }
+        currentDateTimer = new Timer(1000, new ActionListener()
+        {
+            private DateFormat df = new SimpleDateFormat("y-M-d HH:mm:ss");
 
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
                 currentDate.add(Calendar.SECOND, 1);
+                System.out.println(currentDate.getTimeZone().inDaylightTime(currentDate.getTime())+" "+DSTFrame.this.DSTFlag);
+                if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())&&DSTFrame.this.DSTFlag==false) {
+                    currentDate.add(Calendar.HOUR_OF_DAY, -1);
+                    DSTFrame.this.DSTFlag=true;
+                    System.out.println(1);
+                }
+                else if(currentDate.getTimeZone().inDaylightTime(currentDate.getTime())==false&&DSTFrame.this.DSTFlag)
+                {
+                    currentDate.add(Calendar.HOUR_OF_DAY, 1);
+                    DSTFrame.this.DSTFlag=false;
+                    System.out.println(2);
+                }
                 currentDateBtn.setText(df.format(currentDate.getTime()));
                 timerLabel.setText(TransMillToSimple.TransMill(DSTFrame.this.costCounter.currentTime()));
             }
-            
         });
         currentDateTimer.setInitialDelay(0);
         currentDateTimer.setRepeats(true);
         currentDateTimer.start();
-        
+
         logPanel.setVisible(false);
         this.pack();
     }
@@ -64,13 +84,15 @@ public class DSTFrame extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         dateSetupDialog = new javax.swing. JDialog(this);
         jLabel6 = new javax.swing.JLabel();
         currentDateSpinner = new javax.swing.JSpinner();
-        jLabel7 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        jComboBox2 = new javax.swing.JComboBox();
+        jLabel4 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         currentDateBtn = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -88,11 +110,14 @@ public class DSTFrame extends javax.swing.JFrame {
         dateSetupDialog.setModal(true);
         dateSetupDialog.setModalExclusionType(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
         dateSetupDialog.setResizable(false);
-        dateSetupDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowActivated(java.awt.event.WindowEvent evt) {
+        dateSetupDialog.addWindowListener(new java.awt.event.WindowAdapter()
+        {
+            public void windowActivated(java.awt.event.WindowEvent evt)
+            {
                 dateSetupDialogActivated(evt);
             }
-            public void windowClosed(java.awt.event.WindowEvent evt) {
+            public void windowClosed(java.awt.event.WindowEvent evt)
+            {
                 dateSetupDialogClosed(evt);
             }
         });
@@ -100,16 +125,27 @@ public class DSTFrame extends javax.swing.JFrame {
         jLabel6.setText("当前时间：");
 
         currentDateSpinner.setModel(new javax.swing.SpinnerDateModel());
-        currentDateSpinner.setEditor(new javax.swing.JSpinner.DateEditor(currentDateSpinner, "y-M-d hh:mm:ss"));
-
-        jLabel7.setText("夏令时开始时间为3月最后一个周日。");
+        currentDateSpinner.setEditor(new javax.swing.JSpinner.DateEditor(currentDateSpinner, "y-M-d HH:mm:ss"));
 
         jButton1.setText("确定");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton1.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 changeDateActionPerformed(evt);
             }
         });
+
+        jComboBox2.setModel(new DefaultComboBoxModel(TimeZone.getAvailableIDs()));
+        jComboBox2.addItemListener(new java.awt.event.ItemListener()
+        {
+            public void itemStateChanged(java.awt.event.ItemEvent evt)
+            {
+                jComboBox2ItemStateChanged(evt);
+            }
+        });
+
+        jLabel4.setText("时区");
 
         javax.swing.GroupLayout dateSetupDialogLayout = new javax.swing.GroupLayout(dateSetupDialog.getContentPane());
         dateSetupDialog.getContentPane().setLayout(dateSetupDialogLayout);
@@ -118,12 +154,15 @@ public class DSTFrame extends javax.swing.JFrame {
             .addGroup(dateSetupDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addGroup(dateSetupDialogLayout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(currentDateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dateSetupDialogLayout.createSequentialGroup()
+                        .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                        .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jComboBox2, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(currentDateSpinner, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         dateSetupDialogLayout.setVerticalGroup(
@@ -133,9 +172,11 @@ public class DSTFrame extends javax.swing.JFrame {
                 .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(currentDateSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(dateSetupDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addGap(4, 4, 4)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(14, Short.MAX_VALUE))
         );
@@ -151,8 +192,10 @@ public class DSTFrame extends javax.swing.JFrame {
         currentDateBtn.setText("初始化请稍后");
         currentDateBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         currentDateBtn.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        currentDateBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        currentDateBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 currentDateBtnActionPerformed(evt);
             }
         });
@@ -167,15 +210,18 @@ public class DSTFrame extends javax.swing.JFrame {
         jLabel5.setText("0.00");
 
         commToggleBtn.setText("开始通话");
-        commToggleBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        commToggleBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 commToggleBtnActionPerformed(evt);
             }
         });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
+        jList1.setModel(new javax.swing.AbstractListModel()
+        {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
@@ -198,8 +244,10 @@ public class DSTFrame extends javax.swing.JFrame {
         );
 
         logBtn.setText("历史记录");
-        logBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        logBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 logBtnActionPerformed(evt);
             }
         });
@@ -262,27 +310,23 @@ public class DSTFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_currentDateBtnActionPerformed
 
     private void commToggleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commToggleBtnActionPerformed
-        if(this.commToggleBtn.getText().equals("开始通话"))
-        {
+        if (this.commToggleBtn.getText().equals("开始通话")) {
             this.commToggleBtn.setText("结束通话");
             this.costCounter.reset();
             this.costCounter.Start();
             this.timerLabel.setText("00:00");
             this.jLabel5.setText("0.0");
-        }
-        else
-        {
+        } else {
             this.commToggleBtn.setText("开始通话");
             this.costCounter.Stop();
-            Long duration=DSTFrame.this.costCounter.getDuration();
-            Long durationMinute=duration/1000/60;
-            if(duration/1000%60!=0)
-            {
+            Long duration = DSTFrame.this.costCounter.getDuration();
+            Long durationMinute = duration / 1000 / 60;
+            if (duration / 1000 % 60 != 0) {
                 durationMinute++;
             }
             DSTFrame.this.jLabel5.setText(DSTFrame.this.phonecost.getCost(durationMinute).toString());
         }
-        
+
     }//GEN-LAST:event_commToggleBtnActionPerformed
 
     private void changeDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeDateActionPerformed
@@ -305,10 +349,28 @@ public class DSTFrame extends javax.swing.JFrame {
         this.pack();
     }//GEN-LAST:event_logBtnActionPerformed
 
+    private void jComboBox2ItemStateChanged(java.awt.event.ItemEvent evt)//GEN-FIRST:event_jComboBox2ItemStateChanged
+    {//GEN-HEADEREND:event_jComboBox2ItemStateChanged
+        String timezone = (String) DSTFrame.this.jComboBox2.getSelectedItem();
+        TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+        this.currentDate.setTimeZone(TimeZone.getTimeZone(timezone));
+        this.currentDateSpinner.setValue(this.currentDate.getTime());
+        if (currentDate.getTimeZone().inDaylightTime(currentDate.getTime())) 
+        {
+            this.DSTFlag=true;
+        }
+        else
+        {
+            this.DSTFlag=false;
+        }
+        System.out.println(this.currentDate.getTimeZone());
+    }//GEN-LAST:event_jComboBox2ItemStateChanged
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -322,14 +384,15 @@ public class DSTFrame extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 new DSTFrame().setVisible(true);
             }
         });
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton commToggleBtn;
     private javax.swing.JButton currentDateBtn;
@@ -337,12 +400,13 @@ public class DSTFrame extends javax.swing.JFrame {
     private javax.swing.JDialog dateSetupDialog;
     private javax.swing.JButton jButton1;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToggleButton logBtn;
