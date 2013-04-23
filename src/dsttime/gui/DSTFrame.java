@@ -1,5 +1,9 @@
 package dsttime.gui;
 
+import dsttime.CostCounter;
+import dsttime.PhoneCostStrategy;
+import dsttime.SimplePhoneCostStrategy;
+import dsttime.TransMillToSimple;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
@@ -13,6 +17,9 @@ import javax.swing.Timer;
 public class DSTFrame extends javax.swing.JFrame {
 
     private Timer timer;
+    private Timer toggleTimer;
+    private PhoneCostStrategy phonecost;
+    private CostCounter costCounter;
     private Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     
     /**
@@ -20,18 +27,32 @@ public class DSTFrame extends javax.swing.JFrame {
      */
     public DSTFrame() {
         initComponents();
-        
+        this.phonecost=new SimplePhoneCostStrategy();
+        this.costCounter=new CostCounter();
         timer = new Timer(1000, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                currentDate.roll(Calendar.SECOND, true);
+                currentDate.add(Calendar.SECOND, 1);
                 currentDateBtn.setText(currentDate.getTime().toString());
+                
             }
             
         });
         timer.setRepeats(true);
         timer.start();
+        
+        toggleTimer=new Timer(1000,new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DSTFrame.this.jLabel4.setText(TransMillToSimple.TransMill(DSTFrame.this.costCounter.currentTime()));
+            }
+            
+        });
+        toggleTimer.setRepeats(true);
+        
     }
 
     /**
@@ -54,7 +75,7 @@ public class DSTFrame extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jToggleButton1 = new javax.swing.JToggleButton();
+        commToggleBtn = new javax.swing.JToggleButton();
 
         dateSetupDialog.setTitle("设置当前时间");
         dateSetupDialog.setModal(true);
@@ -123,7 +144,12 @@ public class DSTFrame extends javax.swing.JFrame {
 
         jLabel5.setText("0.00");
 
-        jToggleButton1.setText("开始通话");
+        commToggleBtn.setText("开始通话");
+        commToggleBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                commToggleBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -132,7 +158,7 @@ public class DSTFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(commToggleBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -163,7 +189,7 @@ public class DSTFrame extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jToggleButton1)
+                .addComponent(commToggleBtn)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -174,6 +200,32 @@ public class DSTFrame extends javax.swing.JFrame {
         dateSetupDialog.pack();
         dateSetupDialog.setVisible(true);
     }//GEN-LAST:event_currentDateBtnActionPerformed
+
+    private void commToggleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commToggleBtnActionPerformed
+        if(this.commToggleBtn.getText().equals("开始通话"))
+        {
+            this.commToggleBtn.setText("结束通话");
+            this.costCounter.reset();
+            this.costCounter.Start();
+            toggleTimer.restart();
+            this.jLabel4.setText("00:00");
+            this.jLabel5.setText("0.0");
+        }
+        else
+        {
+            this.commToggleBtn.setText("开始通话");
+            this.costCounter.Stop();
+            toggleTimer.stop();
+            Long duration=DSTFrame.this.costCounter.getDuration();
+            Long durationMinute=duration/1000/60;
+            if(duration/1000%60!=0)
+            {
+                durationMinute++;
+            }
+            DSTFrame.this.jLabel5.setText(DSTFrame.this.phonecost.getCost(durationMinute).toString());
+        }
+        
+    }//GEN-LAST:event_commToggleBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -212,6 +264,7 @@ public class DSTFrame extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton commToggleBtn;
     private javax.swing.JButton currentDateBtn;
     private javax.swing.JDialog dateSetupDialog;
     private javax.swing.JLabel jLabel1;
@@ -222,7 +275,6 @@ public class DSTFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JToggleButton jToggleButton2;
     // End of variables declaration//GEN-END:variables
 }

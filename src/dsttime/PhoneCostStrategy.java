@@ -13,5 +13,5 @@ public interface PhoneCostStrategy {
      * @param minutes the minutes to calculate the cost.
      * @return the money.
      */
-    double getCost(long minutes);
+    Double getCost(long minutes);
 }

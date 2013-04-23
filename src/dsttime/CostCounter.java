@@ -46,4 +46,11 @@ public class CostCounter {
         return this.endTime-this.startTime;
     }
     
+    public void reset()
+    {
+         this.startTime=0L;
+        this.endTime=0L;
+        this.flag=false;
+        this.currentTime=0L;
+    }
 }

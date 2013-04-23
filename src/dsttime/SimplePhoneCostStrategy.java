@@ -11,9 +11,15 @@ package dsttime;
 public class SimplePhoneCostStrategy implements PhoneCostStrategy {
 
     @Override
-    public double getCost(long minutes) {
-        
-        return 0;
+    public Double getCost(long minutes) {
+        if(minutes<=20)
+        {
+            return minutes*0.05;
+        }
+        else
+        {
+            return 1+0.1*(minutes-20);
+        }
     }
     
 }
