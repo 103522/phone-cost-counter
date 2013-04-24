@@ -301,6 +301,7 @@ public class DSTFrame extends javax.swing.JFrame
             this.costCounter.Start();
             this.timerLabel.setText("00:00");
             this.jLabel5.setText("0.0");
+            this.currentDateBtn.setEnabled(false);
         } else {
             this.commToggleBtn.setText("开始通话");
             this.costCounter.Stop();
@@ -310,6 +311,7 @@ public class DSTFrame extends javax.swing.JFrame
                 durationMinute++;
             }
             DSTFrame.this.jLabel5.setText(DSTFrame.this.phonecost.getCost(durationMinute).toString());
+            this.currentDateBtn.setEnabled(true);
         }
 
     }//GEN-LAST:event_commToggleBtnActionPerformed
