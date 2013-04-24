@@ -12,6 +12,10 @@ public class SimplePhoneCostStrategy implements PhoneCostStrategy {
 
     @Override
     public Double getCost(long minutes) {
+        if(minutes>1200)
+        {
+            throw new UnsupportedOperationException();
+        }
         if(minutes<=20)
         {
             return minutes*0.05;
